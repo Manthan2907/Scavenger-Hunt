@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Museum Quest - Indian Science & Heritage</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .museum-card {
+            transition: transform 0.2s;
+        }
+        .museum-card:hover {
+            transform: translateY(-5px);
+        }
+        .category-header {
+            background: #1a365d;
+            color: white;
+            padding: 1rem;
+            margin: 2rem 0 1rem 0;
+            border-radius: 0.5rem;
+        }
+
+        /* Alert styles */
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideDown 0.5s ease-out;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #34D399;
+        }
+
+        .alert-error {
+            background-color: #EF4444;
+        }
+
+        @keyframes slideDown {
+            from {
+                top: -100px;
+                opacity: 0;
+            }
+            to {
+                top: 20px;
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Alerts -->
+    <div id="successAlert" class="alert alert-success">Correct Answer! ✅</div>
+    <div id="errorAlert" class="alert alert-error">Incorrect Answer! ❌</div>
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Museum Quest</h1>
+            <p class="text-xl text-gray-600">Explore India's Scientific & Cultural Heritage</p>
+        </header>
+
+        <div class="bg-blue-50 p-6 rounded-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4">Virtual Scavenger Hunt</h2>
+            <div id="quiz-section">
+                <p class="mb-2">Score: <span id="score">0</span>/15</p>
+                <div id="question" class="text-lg font-semibold mb-4"></div>
+                <div id="feedback" class="text-md text-gray-700 mb-4"></div>
+            </div>
+        </div>
+
+        <h2 class="category-header">Science Museums</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="museums-grid"></div>
+        
+        <h2 class="category-header">Historical Sites</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="historical-sites-grid"></div>
+    </div>
+
+    <script>
+        const museums = [
+            {
+                name: "Nehru Science Centre",
+                location: "Mumbai, Maharashtra",
+                description: "One of India's largest interactive science centers featuring exhibits on energy, space exploration, and sound technology.",
+                exhibits: ["Hall of Nuclear Power", "Space Technology Gallery", "Science for Children Gallery", "Sound & Music Gallery"],
+                facts: ["Houses over 500 interactive science exhibits", "Features a 3D Science Show", "Has a dedicated Innovation Hub", "Annual footfall of over 1 million visitors"]
+            },
+            {
+                name: "Birla Industrial & Technological Museum",
+                location: "Kolkata, West Bengal",
+                description: "First science museum in India, showcasing the evolution of Indian technology and industrial heritage.",
+                exhibits: ["Transport Gallery", "Mathematics Gallery", "Ancient Indian Science Gallery", "Metals Gallery"],
+                facts: ["Established in 1959", "Features Ancient Astronomical Instruments", "Interactive Mathematics Exhibits", "Popular student workshops"]
+            },
+            {
+                name: "B.M. Birla Science Museum",
+                location: "Hyderabad, Telangana",
+                description: "Famous for its planetarium and dinosaur gallery, featuring interactive astronomy exhibits.",
+                exhibits: ["Dinosaurium", "Interactive Science Center", "Archaeological Museum", "Planetarium"],
+                facts: ["Houses India's first Science on Sphere system", "Features life-size dinosaur models", "Regular astronomy shows", "Interactive DNA exhibit"]
+            },
+            {
+                name: "Visvesvaraya Industrial & Technological Museum",
+                location: "Bangalore, Karnataka",
+                description: "Named after Sir M. Visvesvaraya, showcasing technological advancement in India.",
+                exhibits: ["Engine Hall", "Space Gallery", "Biotechnology Gallery", "Electric Power"],
+                facts: ["Features Wright Brothers aircraft replica", "Interactive biotechnology exhibits", "Regular science shows", "Founded in 1965"]
+            },
+            {
+                name: "National Science Centre",
+                location: "Delhi",
+                description: "Flagship science center featuring cutting-edge exhibitions and interactive displays.",
+                exhibits: ["Human Biology Gallery", "Fun Science Gallery", "Information Revolution", "Prehistoric Life"],
+                facts: ["Established in 1992", "Houses a digital planetarium", "Features climate change exhibits", "Regular science demonstration shows"]
+            },
+            {
+                name: "Science City",
+                location: "Kolkata, West Bengal",
+                description: "Largest science center in India, featuring unique attractions and hands-on exhibits.",
+                exhibits: ["Space Odyssey", "Evolution Park", "Maritime Centre", "Earth Exploration"],
+                facts: ["Opened in 1997", "Features butterfly enclosure", "Has time machine experience", "Hosts science film festivals"]
+            }
+        ];
+
+        const historicalSites = [
+            {
+                name: "Jantar Mantar",
+                location: "Jaipur, Rajasthan",
+                description: "Ancient astronomical observatory built by Maharaja Jai Singh II, featuring the world's largest stone sundial.",
+                exhibits: ["Samrat Yantra", "Jai Prakash Yantra", "Rama Yantra", "Hindu Chhatri"],
+                facts: ["Built between 1727-1734", "UNESCO World Heritage Site", "13 architectural astronomy instruments", "Accurate time measurements"]
+            },
+            {
+                name: "Nalanda University Ruins",
+                location: "Bihar",
+                description: "Ancient center of learning, one of the world's oldest universities, known for mathematics and astronomy studies.",
+                exhibits: ["Great Library Site", "Buddhist Temples", "Ancient Classrooms", "Meditation Halls"],
+                facts: ["Founded in 5th century CE", "UNESCO World Heritage Site", "Had over 10,000 students", "Destroyed in 1193 CE"]
+            },
+            {
+                name: "Konark Sun Temple",
+                location: "Odisha",
+                description: "13th-century temple dedicated to the Sun God, featuring precise astronomical alignments and mathematical principles.",
+                exhibits: ["Main Sanctum", "Assembly Hall", "Dancing Hall", "Astronomical Wheels"],
+                facts: ["Built in 1250 CE", "UNESCO World Heritage Site", "24 giant wheels", "Serves as giant sundial"]
+            }
+        ];
+
+        const questions = [
+            {
+                question: "Which museum houses India's first Science on Sphere system?",
+                answer: "B.M. Birla Science Museum",
+                explanation: "The B.M. Birla Science Museum in Hyderabad was the first in India to install the Science on Sphere system."
+            },
+            {
+                question: "In which year was the Birla Industrial & Technological Museum established?",
+                answer: "1959",
+                explanation: "The Birla Industrial & Technological Museum was established in 1959, making it India's first science museum."
+            },
+            {
+                question: "Which museum features a Wright Brothers aircraft replica?",
+                answer: "Visvesvaraya Industrial & Technological Museum",
+                explanation: "The Visvesvaraya Museum in Bangalore houses this historic aircraft replica."
+            },
+            {
+                question: "Which science center is the largest in India?",
+                answer: "Science City",
+                explanation: "Science City in Kolkata is India's largest science center."
+            },
+            {
+                question: "Where is the world's largest stone sundial located?",
+                answer: "Jantar Mantar",
+                explanation: "The Samrat Yantra at Jantar Mantar, Jaipur, is the world's largest stone sundial."
+            },
+            {
+                question: "In which year was the National Science Centre established?",
+                answer: "1992",
+                explanation: "The National Science Centre in Delhi was established in 1992."
+            },
+            {
+                question: "How many architectural astronomy instruments are there at Jantar Mantar?",
+                answer: "13",
+                explanation: "Jantar Mantar features 13 different architectural astronomy instruments."
+            },
+            {
+                question: "When was Nalanda University founded?",
+                answer: "5th century CE",
+                explanation: "Nalanda University was established in the 5th century CE."
+            },
+            {
+                question: "How many wheels does the Konark Sun Temple have?",
+                answer: "24",
+                explanation: "The Konark Sun Temple features 24 giant wheels around its base."
+            },
+            {
+                question: "Which science museum has a butterfly enclosure?",
+                answer: "Science City",
+                explanation: "Science City in Kolkata features a unique butterfly enclosure."
+            },
+            {
+                question: "When was the Konark Sun Temple built?",
+                answer: "1250 CE",
+                explanation: "The Konark Sun Temple was constructed around 1250 CE."
+            },
+            {
+                question: "Which museum has the Interactive DNA exhibit?",
+                answer: "B.M. Birla Science Museum",
+                explanation: "The B.M. Birla Science Museum features an interactive DNA exhibit."
+            },
+            {
+                question: "When was Science City opened to the public?",
+                answer: "1997",
+                explanation: "Science City in Kolkata was opened in 1997."
+            },
+            {
+                question: "In which year was Nalanda University destroyed?",
+                answer: "1193 CE",
+                explanation: "Nalanda University was destroyed in 1193 CE."
+            },
+            {
+                question: "When was the Visvesvaraya Industrial & Technological Museum founded?",
+                answer: "1965",
+                explanation: "The Visvesvaraya Museum was founded in 1965."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function displayLocations() {
+            const museumsGrid = document.getElementById('museums-grid');
+            const historicalGrid = document.getElementById('historical-sites-grid');
+            
+            museums.forEach(museum => {
+                const card = createLocationCard(museum);
+                museumsGrid.appendChild(card);
+            });
+
+            historicalSites.forEach(site => {
+                const card = createLocationCard(site);
+                historicalGrid.appendChild(card);
+            });
+        }
+
+        function createLocationCard(location) {
+            const card = document.createElement('div');
+            card.className = 'museum-card bg-white rounded-lg shadow-lg p-6';
+            card.innerHTML = ` 
+                <h3 class="text-2xl font-bold mb-2">${location.name}</h3>
+                <p class="text-gray-600 mb-2">${location.location}</p>
+                <p class="mb-4">${location.description}</p>
+                <div class="mb-4">
+                    <h4 class="font-bold mb-2">Key Features:</h4>
+                    <ul class="list-disc pl-5">
+                        ${location.exhibits.map(exhibit => `<li>${exhibit}</li>`).join('')}
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-2">Interesting Facts:</h4>
+                    <ul class="list-disc pl-5">
+                        ${location.facts.map(fact => `<li>${fact}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            card.addEventListener('click', () => checkAnswer(location.name));
+            return card;
+        }
+
+        function displayQuestion() {
+            const questionElement = document.getElementById('question');
+            const feedbackElement = document.getElementById('feedback');
+            
+            if (currentQuestion < questions.length) {
+                questionElement.textContent = questions[currentQuestion].question;
+                feedbackElement.textContent = ''; // Clear previous feedback
+            } else {
+                questionElement.textContent = `Quiz completed! Final score: ${score}/${questions.length}`;
+                feedbackElement.textContent = 'Click "Restart Quiz" to try again!';
+            }
+        }
+
+        function checkAnswer(answer) {
+            if (currentQuestion >= questions.length) return;
+            
+            const correct = answer === questions[currentQuestion].answer;
+            const feedbackElement = document.getElementById('feedback');
+            
+            if (correct) {
+                score++;
+                document.getElementById('score').textContent = score;
+                feedbackElement.textContent = `Correct! ${questions[currentQuestion].explanation}`;
+                showAlert('success');  // Show success alert
+            } else {
+                feedbackElement.textContent = `Incorrect. The answer is ${questions[currentQuestion].answer}. ${questions[currentQuestion].explanation}`;
+                showAlert('error');  // Show error alert
+            }
+            
+            currentQuestion++;
+            setTimeout(() => displayQuestion(), 2000); // Show next question after 2 seconds
+        }
+
+        // Function to show alert
+        function showAlert(type) {
+            const alertElement = document.getElementById(type === 'success' ? 'successAlert' : 'errorAlert');
+            alertElement.style.display = 'block';
+            setTimeout(() => {
+                alertElement.style.display = 'none';
+            }, 2000);
+        }
+
+        // Initialize the page
+        displayLocations();
+        displayQuestion();
+    </script>
+</body>
+</html>
